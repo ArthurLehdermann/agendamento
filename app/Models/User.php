@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use TCG\Voyager\Traits\VoyagerUser;
+use TCG\Voyager\Contracts\User as UserContract;
 
-class User extends Authenticatable
+class User extends Authenticatable implements UserContract
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, VoyagerUser;
 
     /**
      * The attributes that are mass assignable.
@@ -21,7 +23,7 @@ class User extends Authenticatable
         'email',
         'password',
         'tenant_id',
-        'role',
+        'role_id',
         'phone',
         'profile_photo',
         'is_active',
@@ -65,11 +67,19 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the role that owns the user.
+     */
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    /**
      * Check if user is an admin.
      */
     public function isAdmin()
     {
-        return $this->role === 'admin';
+        return $this->role && $this->role->name === 'admin';
     }
 
     /**
@@ -77,7 +87,7 @@ class User extends Authenticatable
      */
     public function isOperator()
     {
-        return $this->role === 'operator';
+        return $this->role && $this->role->name === 'operator';
     }
 
     /**
@@ -85,6 +95,6 @@ class User extends Authenticatable
      */
     public function isCustomer()
     {
-        return $this->role === 'customer';
+        return $this->role && $this->role->name === 'customer';
     }
 }

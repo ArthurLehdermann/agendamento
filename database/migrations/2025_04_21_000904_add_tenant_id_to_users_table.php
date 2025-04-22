@@ -13,8 +13,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->foreignId('tenant_id')->nullable()->after('id')->constrained();
-            $table->string('role')->default('customer')->after('email'); // admin, operator, customer
-            $table->string('phone')->nullable()->after('role');
+            $table->string('phone')->nullable()->after('role_id');
             $table->string('profile_photo')->nullable()->after('phone');
             $table->boolean('is_active')->default(true)->after('profile_photo');
         });
@@ -26,8 +25,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropForeign(['tenant_id']);
-            $table->dropColumn(['tenant_id', 'role', 'phone', 'profile_photo', 'is_active']);
+            if (Schema::hasColumn('users', 'tenant_id')) {
+                $table->dropForeign(['tenant_id']);
+            }
+            $table->dropColumn(['tenant_id', 'phone', 'profile_photo', 'is_active']);
         });
     }
 };
